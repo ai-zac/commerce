@@ -1,0 +1,19 @@
+from django import forms
+
+from .models import Auction, Category
+
+
+class CreateAuctionForm(forms.ModelForm):
+    img = forms.URLField(
+        required = False,
+        initial="https://curie.pnnl.gov/sites/default/files/default_images/default-image_0.jpeg"
+    )
+    categories = forms.ModelMultipleChoiceField(
+        required = False,
+        widget = forms.SelectMultiple(),
+        queryset = Category.objects.all()
+    )
+    class Meta:
+        model = Auction
+        fields = ["title", "description", "current_price"]
+
