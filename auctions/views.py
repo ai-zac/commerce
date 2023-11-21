@@ -3,18 +3,20 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.views.decorators.http import require_http_methods
 
 from .forms import CreateAuctionForm
-
 from .models import Auction, Category, User
 
+
 def index(request):
-    return render(request, "auctions/index.html")
+    active_auctions = Auction.objects.filter(active=True)
+    context = {"active_auctions": active_auctions}
+    return render(request, "auctions/index.html", context)
 
 
 def login_view(request):
     if request.method == "POST":
-
         # Attempt to sign user in
         username = request.POST["username"]
         password = request.POST["password"]
@@ -25,9 +27,11 @@ def login_view(request):
             login(request, user)
             return HttpResponseRedirect(reverse("index"))
         else:
-            return render(request, "auctions/login.html", {
-                "message": "Invalid username and/or password."
-            })
+            return render(
+                request,
+                "auctions/login.html",
+                {"message": "Invalid username and/or password."},
+            )
     else:
         return render(request, "auctions/login.html")
 
@@ -46,25 +50,31 @@ def register(request):
         password = request.POST["password"]
         confirmation = request.POST["confirmation"]
         if password != confirmation:
-            return render(request, "auctions/register.html", {
-                "message": "Passwords must match."
-            })
+            return render(
+                request, "auctions/register.html", {"message": "Passwords must match."}
+            )
 
         # Attempt to create new user
         try:
             user = User.objects.create_user(username, email, password)
             user.save()
         except IntegrityError:
-            return render(request, "auctions/register.html", {
-                "message": "Username already taken."
-            })
+            return render(
+                request,
+                "auctions/register.html",
+                {"message": "Username already taken."},
+            )
         login(request, user)
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "auctions/register.html")
 
 
+@require_http_methods(["GET", "POST"])
 def create_listing(request):
+    """
+    Create an auction if the method is post, if get returns an empty form
+    """
     if request.method == "POST":
         form = CreateAuctionForm(request.POST)
         if form.is_valid():
@@ -82,8 +92,7 @@ def create_listing(request):
                 for item in data["categories"]:
                     a.categories.add(item)
             return redirect(reverse("index"))
-    else:
-        form = CreateAuctionForm()
 
+    form = CreateAuctionForm()
     context = {"form": form}
     return render(request, "auctions/create_listing.html", context)
