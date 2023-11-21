@@ -85,7 +85,7 @@ def create_listing(request):
                 current_price=data["current_price"],
                 img=data["img"],
                 user=request.user,
-                active=False,
+                active=True,
             )
 
             if "categories" in data:
