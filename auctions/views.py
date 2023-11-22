@@ -3,7 +3,7 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_GET
 
 from .forms import CreateAuctionForm
 from .models import Auction, Category, User
@@ -40,7 +40,6 @@ def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))
 
-
 def register(request):
     if request.method == "POST":
         username = request.POST["username"]
@@ -71,13 +70,6 @@ def register(request):
 
 
 @require_http_methods(["GET", "POST"])
-def listing_page(request, id_auction):
-    a = Auction.objects.get(pk=id_auction)
-    context = {"auction": a}
-    return render(request, "auctions/auction.html", context)
-
-
-@require_http_methods(["GET", "POST"])
 def create_listing(request):
     """
     Create an auction if the method is post, if get returns an empty form
@@ -91,7 +83,7 @@ def create_listing(request):
                 description=data["description"],
                 current_price=data["current_price"],
                 img=data["img"],
-                user=request.user,
+                username=request.user,
                 active=True,
             )
 
@@ -103,3 +95,29 @@ def create_listing(request):
     form = CreateAuctionForm()
     context = {"form": form}
     return render(request, "auctions/create_listing.html", context)
+
+
+@require_http_methods(["GET", "POST"])
+def listing_page(request, id_auction):
+    a = Auction.objects.get(pk=id_auction)
+    context = {"auction": a}
+    return render(request, "auctions/auction.html", context)
+
+
+@require_GET
+def add_auction_watchlist(request, id_auction):
+    a = Auction.objects.get(pk=id_auction)
+    request.user.watchlist.add(a)
+    return redirect(reverse("watchlist"))
+
+
+@require_GET
+def delete_auction_watchlist(request, id_auction):
+    a = Auction.objects.get(pk=id_auction)
+    request.user.watchlist.remove(a)
+    return redirect(reverse("watchlist"))
+
+
+@require_http_methods(["GET", "POST"])
+def show_watchlist(request):
+    return render(request, "auctions/watchlist.html")

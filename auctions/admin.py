@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from auctions.models import Auction, Bid, Category, Comment
+from auctions.models import User, Auction, Bid, Category, Comment
 
 
 # Register your models here.
@@ -15,7 +15,7 @@ class BidAdminInline(admin.StackedInline):
 
 
 class AuctionAdmin(admin.ModelAdmin):
-    list_display = ["title", "user", "current_price", "active"]
+    list_display = ["title", "username", "current_price", "active"]
     inlines = [BidAdminInline, CommentAdminInline]
 
 
@@ -23,6 +23,7 @@ class BidAndCommentAdmin(admin.ModelAdmin):
     list_display = ["user", "auction"]
 
 
+admin.site.register(User)
 admin.site.register(Auction, AuctionAdmin)
 admin.site.register(Bid, BidAndCommentAdmin)
 admin.site.register(Comment, BidAndCommentAdmin)

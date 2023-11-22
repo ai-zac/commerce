@@ -3,6 +3,7 @@ from django.db import models
 
 
 class User(AbstractUser):
+    watchlist = models.ManyToManyField("Auction")
     pass
 
 
@@ -19,11 +20,11 @@ class Auction(models.Model):
     current_price = models.DecimalField(max_digits=11, decimal_places=2, default=0.0)
     img = models.URLField(null=True)
     categories = models.ManyToManyField(Category)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    username = models.ForeignKey(User, on_delete=models.CASCADE)
     active = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"'{self.title}' auction by {self.user}"
+        return f"'{self.title}' auction by {self.username}"
 
 
 class Comment(models.Model):
