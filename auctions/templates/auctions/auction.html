@@ -1,0 +1,8 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<img src="{{ auction.img }}">
+<h1>{{ auction.title }}</h1>
+<h3>{{ auction.description }}</h3>
+<h4>${{ auction.current_price|floatformat:"2g" }}</h4>
+{% endblock %}

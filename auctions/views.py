@@ -71,6 +71,13 @@ def register(request):
 
 
 @require_http_methods(["GET", "POST"])
+def listing_page(request, id_auction):
+    a = Auction.objects.get(pk=id_auction)
+    context = {"auction": a}
+    return render(request, "auctions/auction.html", context)
+
+
+@require_http_methods(["GET", "POST"])
 def create_listing(request):
     """
     Create an auction if the method is post, if get returns an empty form
