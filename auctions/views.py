@@ -106,11 +106,26 @@ def create_listing(request):
     return render(request, "auctions/create_listing.html", context)
 
 
+@require_GET
+def close_listing(request, id_auction):
+    a = Auction.objects.get(pk=id_auction)
+    if (request.user.id == a.username_id):
+        a.active = False
+        a.save()
+    return redirect(reverse("listing_details", args=(id_auction,)))
+
+
+
 @require_http_methods(["GET", "POST"])
 def listing_page(request, id_auction):
     a = Auction.objects.get(pk=id_auction)
+    try: 
+        highest_bid = a.bids.order_by("-price")[:1][0]
+    except IndexError:
+        highest_bid = None
     context = {
         "auction": a,
+        "highest_bid": highest_bid,
         "bid_form": BidForm,
     }
     return render(request, "auctions/auction.html", context)

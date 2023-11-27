@@ -10,6 +10,7 @@ urlpatterns = [
     path("register", views.register, name="register"),
     # Listing pages
     path("listing/create", views.create_listing, name="create_listing"),
+    path("listing/close/<id_auction>", views.close_listing, name="close_listing"),
     path("listing/details/<id_auction>", views.listing_page, name="listing_details"),
     # Watchlist  pages
     path("watchlist/add/<id_auction>", views.add_auction_watchlist, name="add_auction_to_watchlist"),

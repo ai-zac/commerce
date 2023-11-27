@@ -1,18 +1,32 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-
 {% load django_bootstrap5 %}
 {% bootstrap_messages %}
 
+{# Auction's state and winner notification #}
+{% if not auction.active %}
+<h1>*This auction is closed</h1>
+{% if highest_bid and highest_bid.user.id == request.user.id %}
+<h3>You WON!!!</h3>
+{% endif %}
+{% endif %}
+
+{# Auction details #}
 <img src="{{ auction.img }}">
 <h1>{{ auction.title }}</h1>
 <h3>{{ auction.description }}</h3>
 <h4>Current price: ${{ auction.current_price }}</h4>
 
+{# If auction is not in user's watchlist, show a 'added' button #}
+{% if not auction in request.user.watchlist.all %}
+<a href="{% url 'add_auction_to_watchlist' auction.id %}" class="btn btn-secondary">Add to watchlist</a>
+{% endif %}
+
 <br>
 
-{% if user.is_authenticated %}
+{# Bid form #}
+{% if user.is_authenticated and auction.active %}
 <h5>Add a bid:</h5>
 <form action="{% url 'bid_add' auction.id %}" method="post">
 	{% csrf_token %}
@@ -25,5 +39,15 @@
 	{% bootstrap_button button_type="submit" content="OK" %}
 	{% bootstrap_button button_type="reset" content="Cancel" %}
 </form>
+{% endif %}
+
+<br>
+
+{# Finish auction if you are the creator #}
+{% if auction.username_id == request.user.id and auction.active %}
+<h5>Finish the auction</h5>
+<button class="btn btn-primary">
+	<a href="{% url 'close_listing' auction.id %}" style="color: white; text-decoration: none;">Finish</a>
+</button>
 {% endif %}
 {% endblock %}

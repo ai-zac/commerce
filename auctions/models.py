@@ -23,7 +23,7 @@ class Auction(models.Model):
     active = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"'{self.title}' auction by {self.username}"
+        return f"'{self.title}' by {self.username}"
 
 
 class Comment(models.Model):
@@ -38,7 +38,7 @@ class Comment(models.Model):
 class Bid(models.Model):
     price = models.DecimalField(max_digits=11, decimal_places=2)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    auction = models.ForeignKey(Auction, on_delete=models.CASCADE)
+    auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name="bids")
 
     def __str__(self):
-        return f"{self.user} bid at {self.auction}"
+        return f"{self.user} bid {self.price} at {self.auction}"
