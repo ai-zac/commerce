@@ -10,7 +10,7 @@
 			<h5 class="card-title">{{ auction.title }}</h5>
 			<h6 class="card-subtitle mb-2 text-body-secondary">Current price: ${{ auction.current_price|floatformat:"2g" }}</h6>
 			<p class="card-text">{{ auction.description }}</p>
-			<a href="{% url 'auction_page' auction.id %}" class="btn btn-primary">Go for it</a>
+			<a href="{% url 'listing_details' auction.id %}" class="btn btn-primary">Go for it</a>
 			<a href="{% url 'delete_auction_to_watchlist' auction.id %}" class="btn btn-secondary">Delete to watchlist</a>
 		</div>
 	</div>

@@ -1,8 +1,29 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
+
+{% load django_bootstrap5 %}
+{% bootstrap_messages %}
+
 <img src="{{ auction.img }}">
 <h1>{{ auction.title }}</h1>
 <h3>{{ auction.description }}</h3>
-<h4>${{ auction.current_price|floatformat:"2g" }}</h4>
+<h4>Current price: ${{ auction.current_price }}</h4>
+
+<br>
+
+{% if user.is_authenticated %}
+<h5>Add a bid:</h5>
+<form action="{% url 'bid_add' auction.id %}" method="post">
+	{% csrf_token %}
+
+	<input name="id_auction" type="number" hidden value="{{ auction.id }}">
+	<input name="current_price" type="number" hidden value="{{ auction.current_price }}">
+
+	{% bootstrap_field bid_form.price show_label=False placeholder="Your bid" %}
+
+	{% bootstrap_button button_type="submit" content="OK" %}
+	{% bootstrap_button button_type="reset" content="Cancel" %}
+</form>
+{% endif %}
 {% endblock %}

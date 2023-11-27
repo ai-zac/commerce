@@ -3,13 +3,17 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.views.decorators.http import require_http_methods, require_GET
+from django.views.decorators.http import require_POST, require_GET, require_http_methods
 
-from .forms import CreateAuctionForm
-from .models import Auction, Category, User
+from .forms import BidForm, CreateAuctionForm
+from .models import Auction, Category, User, Bid
 
 
 def index(request):
+    """
+    The default route of your web application should let 
+    users view all of the currently active auction listings. 
+    """
     active_auctions = Auction.objects.filter(active=True)
     context = {"active_auctions": active_auctions}
     return render(request, "auctions/index.html", context)
@@ -39,6 +43,7 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))
+
 
 def register(request):
     if request.method == "POST":
@@ -74,33 +79,40 @@ def create_listing(request):
     """
     Create an auction if the method is post, if get returns an empty form
     """
+    context = {}
     if request.method == "POST":
         form = CreateAuctionForm(request.POST)
-        if form.is_valid():
-            data = form.cleaned_data
-            a = Auction.objects.create(
-                title=data["title"],
-                description=data["description"],
-                current_price=data["current_price"],
-                img=data["img"],
-                username=request.user,
-                active=True,
-            )
+        if not form.is_valid():
+            context["form"] = form
+            return render(request, "auctions/create_listing.html", context)
 
-            if "categories" in data:
-                for item in data["categories"]:
-                    a.categories.add(item)
-            return redirect(reverse("index"))
+        data = form.cleaned_data
+        a = Auction.objects.create(
+            title=data["title"],
+            description=data["description"],
+            current_price=data["current_price"],
+            img=data["img"],
+            username=request.user,
+            active=True,
+        )
+
+        if "categories" in data:
+            for item in data["categories"]:
+                a.categories.add(item)
+        return redirect(reverse("index"))
 
     form = CreateAuctionForm()
-    context = {"form": form}
+    context["form"] = form
     return render(request, "auctions/create_listing.html", context)
 
 
 @require_http_methods(["GET", "POST"])
 def listing_page(request, id_auction):
     a = Auction.objects.get(pk=id_auction)
-    context = {"auction": a}
+    context = {
+        "auction": a,
+        "bid_form": BidForm,
+    }
     return render(request, "auctions/auction.html", context)
 
 
@@ -119,5 +131,23 @@ def delete_auction_watchlist(request, id_auction):
 
 
 @require_http_methods(["GET", "POST"])
-def show_watchlist(request):
+def watchlist_page(request):
     return render(request, "auctions/watchlist.html")
+
+
+@require_POST
+def bid_add(request, id_auction):
+    a = Auction.objects.get(pk=id_auction)
+    f = BidForm(request.POST or None)
+    context = { 
+        "auction": a,
+        "bid_form": f,
+    }
+    if not f.is_valid() or not f.validate_bid(request.POST):
+        return render(request, "auctions/auction.html", context)
+
+    a.current_price = float(f.cleaned_data["price"])
+    b = Bid(price=float(f.cleaned_data["price"]), user=request.user, auction=a)
+    b.save()
+    a.save()
+    return redirect(reverse("listing_details", args=(id_auction,)))
