@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 
-from .models import Auction, Bid, Category
+from .models import Auction, Bid, Category, Comment
 
 
 class CreateAuctionForm(forms.ModelForm):
@@ -34,3 +34,9 @@ class BidForm(forms.ModelForm):
             self.add_error("price", error)
             return False
         return True 
+
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ["content"]

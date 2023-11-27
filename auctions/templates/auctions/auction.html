@@ -15,12 +15,25 @@
 {# Auction details #}
 <img src="{{ auction.img }}">
 <h1>{{ auction.title }}</h1>
-<h3>{{ auction.description }}</h3>
+<h3>By @<span class="badge bg-secondary">{{ auction.username }}</span></h3>
+<blockquote class="blockquote">
+	<p><i>“{{ auction.description }}”</i></p>
+</blockquote>
 <h4>Current price: ${{ auction.current_price }}</h4>
 
 {# If auction is not in user's watchlist, show a 'added' button #}
 {% if not auction in request.user.watchlist.all %}
 <a href="{% url 'add_auction_to_watchlist' auction.id %}" class="btn btn-secondary">Add to watchlist</a>
+{% endif %}
+
+<br>
+
+{# Finish auction if you are the creator #}
+{% if auction.username_id == request.user.id and auction.active %}
+<h5>Finish the auction</h5>
+<button class="btn btn-primary">
+	<a href="{% url 'close_listing' auction.id %}" style="color: white; text-decoration: none;">Finish</a>
+</button>
 {% endif %}
 
 <br>
@@ -43,11 +56,32 @@
 
 <br>
 
-{# Finish auction if you are the creator #}
-{% if auction.username_id == request.user.id and auction.active %}
-<h5>Finish the auction</h5>
-<button class="btn btn-primary">
-	<a href="{% url 'close_listing' auction.id %}" style="color: white; text-decoration: none;">Finish</a>
-</button>
+{# Comment form #}
+{% if user.is_authenticated and auction.active %}
+<h5>Add a comment:</h5>
+<form action="{% url 'comment_add' auction.id %}" method="post">
+	{% csrf_token %}
+
+	<input name="id_auction" type="number" hidden value="{{ auction.id }}">
+
+	{% bootstrap_form comment_form %}
+
+	{% bootstrap_button button_type="submit" content="OK" %}
+	{% bootstrap_button button_type="reset" content="Cancel" %}
+</form>
+{% endif %}
+
+<br>
+
+<h5>Comments</h5>
+{% if auction.comments.all %}
+{% for comment in auction.comments.all %}
+<div class="card mb-3">
+	<div class="card-body">
+		<h5 class="card-title"><span class="badge bg-secondary">@{{ comment.user }}</span> says:</h5>
+		<p class="card-text"><i>“{{ comment.content }}”</i></p>
+	</div>
+</div>
+{% endfor %}
 {% endif %}
 {% endblock %}

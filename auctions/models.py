@@ -29,7 +29,7 @@ class Auction(models.Model):
 class Comment(models.Model):
     content = models.TextField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    auction = models.ForeignKey(Auction, on_delete=models.CASCADE)
+    auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name="comments")
 
     def __str__(self):
         return f"{self.user} comment on {self.auction}"

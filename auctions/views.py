@@ -5,8 +5,8 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST, require_GET, require_http_methods
 
-from .forms import BidForm, CreateAuctionForm
-from .models import Auction, Category, User, Bid
+from .forms import BidForm, CommentForm, CreateAuctionForm
+from .models import Auction, Category, Comment, User, Bid
 
 
 def index(request):
@@ -127,8 +127,43 @@ def listing_page(request, id_auction):
         "auction": a,
         "highest_bid": highest_bid,
         "bid_form": BidForm,
+        "comment_form": CommentForm,
     }
     return render(request, "auctions/auction.html", context)
+
+
+@require_POST
+def bid_add(request, id_auction):
+    a = Auction.objects.get(pk=id_auction)
+    f = BidForm(request.POST or None)
+    context = { 
+        "auction": a,
+        "bid_form": f,
+    }
+    if not f.is_valid() or not f.validate_bid(request.POST):
+        return render(request, "auctions/auction.html", context)
+
+    a.current_price = float(f.cleaned_data["price"])
+    a.save()
+    b = Bid(price=float(f.cleaned_data["price"]), user=request.user, auction=a)
+    b.save()
+    return redirect(reverse("listing_details", args=(id_auction,)))
+
+
+@require_POST
+def comment_add(request, id_auction):
+    a = Auction.objects.get(pk=id_auction)
+    f = CommentForm(request.POST or None)
+    context = { 
+        "auction": a,
+        "comment_form": f,
+    }
+    if not f.is_valid():
+        return render(request, "auctions/auction.html", context)
+
+    b = Comment(content=f.cleaned_data["content"], user=request.user, auction=a)
+    b.save()
+    return redirect(reverse("listing_details", args=(id_auction,)))
 
 
 @require_GET
@@ -148,21 +183,3 @@ def delete_auction_watchlist(request, id_auction):
 @require_http_methods(["GET", "POST"])
 def watchlist_page(request):
     return render(request, "auctions/watchlist.html")
-
-
-@require_POST
-def bid_add(request, id_auction):
-    a = Auction.objects.get(pk=id_auction)
-    f = BidForm(request.POST or None)
-    context = { 
-        "auction": a,
-        "bid_form": f,
-    }
-    if not f.is_valid() or not f.validate_bid(request.POST):
-        return render(request, "auctions/auction.html", context)
-
-    a.current_price = float(f.cleaned_data["price"])
-    b = Bid(price=float(f.cleaned_data["price"]), user=request.user, auction=a)
-    b.save()
-    a.save()
-    return redirect(reverse("listing_details", args=(id_auction,)))
