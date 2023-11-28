@@ -1,19 +1,27 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-<h2>Active Listings</h2>
+{% autoescape off %}
+<h1>{{ title }}</h1>
+{% endautoescape %}
+
+{% if not auctions %}
+<h2>None yet...</h2>
+{% endif %}
 
 <div class="row" data-masonry="{&quot;percentPosition&quot;: true }">
-	{% for auction in active_auctions %}
+	{% for auction in auctions %}
 	<div class="card" style="width: 18rem;">
 		<img src="{{ auction.img }}" class="card-img-top" alt="...">
 		<div class="card-body">
 			<h5 class="card-title">{{ auction.title }}</h5>
 			<h6 class="card-subtitle mb-2 text-body-secondary">Current price: ${{ auction.current_price|floatformat:"2g" }}</h6>
-			<p class="card-text">{{ auction.description }}</p>
+			<p class="card-text">{{ auction.description|slice:":20" }}...</p>
 			<a href="{% url 'listing_details' auction.id %}" class="btn btn-primary">Go for it</a>
 			{% if not auction in request.user.watchlist.all %}
 			<a href="{% url 'add_auction_to_watchlist' auction.id %}" class="btn btn-secondary">Add to watchlist</a>
+			{% else %}
+			<a href="{% url 'delete_auction_to_watchlist' auction.id %}" class="btn btn-secondary">Delete to watchlist</a>
 			{% endif %}
 		</div>
 	</div>

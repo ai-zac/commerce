@@ -15,7 +15,16 @@
 {# Auction details #}
 <img src="{{ auction.img }}">
 <h1>{{ auction.title }}</h1>
-<h2>By @<span class="badge bg-secondary">{{ auction.username }}</span></h2>
+<h2>By @<span class="badge bg-primary">{{ auction.username }}</span></h2>
+{% if auction.categories.all %}
+<div class="d-flex flex-row">
+	{% for category in auction.categories.all %}
+	<div class="p-2">
+		<h3><span class="badge bg-info">{{ category }}</span></h3>
+	</div>
+	{% endfor %}
+</div>
+{% endif %}
 <blockquote class="blockquote">
 	<p><i>“{{ auction.description }}”</i></p>
 </blockquote>
@@ -70,6 +79,7 @@
 </form>
 {% endif %}
 
+{# Comments section #}
 <br>
 <h3>Comments:</h3>
 {% if auction.comments.all %}

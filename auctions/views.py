@@ -15,7 +15,10 @@ def index(request):
     users view all of the currently active auction listings. 
     """
     active_auctions = Auction.objects.filter(active=True)
-    context = {"active_auctions": active_auctions}
+    context = {
+        "title": "Active Listing",
+        "auctions": active_auctions,
+    }
     return render(request, "auctions/index.html", context)
 
 
@@ -182,4 +185,26 @@ def delete_auction_watchlist(request, id_auction):
 
 @require_http_methods(["GET", "POST"])
 def watchlist_page(request):
-    return render(request, "auctions/watchlist.html")
+    a = request.user.watchlist.all()
+    context = {
+        "title": "Watchlist",
+        "auctions": a,
+    }
+    return render(request, "auctions/index.html", context)
+
+
+@require_GET
+def categories_page(request):
+    c = Category.objects.all()
+    return render(request, "auctions/categories.html", {"categories": c})
+
+
+@require_GET
+def category_items(request, id_category):
+    c = Category.objects.get(pk=id_category)
+    context = {
+        "title": f"<span class='badge bg-dark'>{c.name}</span>",
+        "auctions": c.auction_set.all(),
+    }
+    return render(request, "auctions/index.html", context)
+    

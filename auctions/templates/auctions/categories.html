@@ -1,0 +1,16 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+{% load django_bootstrap5 %}
+{% bootstrap_messages %}
+<h1>Listing Categories</h1>
+<div class="container">
+	<div class="row g-3" >
+		{% for category in categories %}
+		<div class="col-auto">
+			<button class="btn btn-primary"><a href="{% url 'category_items' category.id %}" style="color: white; text-decoration: none;">{{ category }}</a></button>
+		</div>
+		{% endfor %}
+	</div>
+</div>
+{% endblock %}
